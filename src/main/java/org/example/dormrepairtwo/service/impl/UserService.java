@@ -3,6 +3,7 @@ package org.example.dormrepairtwo.service.impl;
 import org.example.dormrepairtwo.exception.BusinessException;
 import org.example.dormrepairtwo.mapper.UserMapper;
 import org.example.dormrepairtwo.pojo.User;
+import org.example.dormrepairtwo.util.BCryptUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -25,11 +26,18 @@ public class UserService {
         User user = userMapper.selectByUserId(userId);
         if (user == null) {
             logger.warn("用户{}登录失败：用户不存在", userId);
-            throw new BusinessException(500,"用户不存在");
+            throw new BusinessException(500, "用户不存在");
         }
+        /*
         if (!user.getPassword().equals(password)) {
             logger.warn("用户{}登录失败：密码错误", userId);
             throw new BusinessException(500,"密码错误");
+        }
+        4.1 13:25增加密码加密验证
+         */
+        if (!BCryptUtil.matches(password, user.getPassword())) {
+            logger.warn("用户{}登录失败：密码错误", userId);
+            throw new BusinessException(500, "密码错误");
         }
         logger.info("用户{}登录成功", userId);
         return user;

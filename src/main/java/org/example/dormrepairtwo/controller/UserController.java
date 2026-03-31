@@ -1,6 +1,7 @@
 package org.example.dormrepairtwo.controller;
 
 import org.example.dormrepairtwo.exception.BusinessException;
+import org.example.dormrepairtwo.util.BCryptUtil;
 import org.example.dormrepairtwo.util.JwtUtil;
 import org.springframework.web.bind.annotation.*;
 import org.example.dormrepairtwo.pojo.User;
@@ -30,6 +31,7 @@ public class UserController {
     // 添加账号/密码格式校验 + 异常抛出（替代直接返回fail）
     @PostMapping("/register")
     public Result<?> register(@RequestBody User user) {
+
         // 非空校验
         if (user.getUserId() == null || user.getPassword() == null || user.getRole() == null) {
             throw new BusinessException(400, "账号、密码、角色不能为空");
@@ -47,9 +49,14 @@ public class UserController {
             throw new BusinessException(400, "角色只能是1（学生）或2（维修人员）");
         }
 
+        // 密码加密(4.1  13:21增加）
+        String rawPassword = user.getPassword();
+        String encodedPassword = BCryptUtil.encode(rawPassword);
+        user.setPassword(encodedPassword);
         if (userService.isUserIdExist(user.getUserId())) {
             throw new BusinessException(400, "账号已存在，请勿重复注册");
         }
+
         boolean success = userService.register(user);
         if (success) {
             return Result.success("注册成功", null);
